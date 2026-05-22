@@ -1,0 +1,9 @@
+
+# Ignorar o conteúdo da pasta de dados, mas manter a pasta
+dados/concentrado/*
+dados/conversando/*
+dados/rage/*
+dados/regiao/*
+
+# Mas não ignore o arquivo que mantém as pastas vivas
+!.gitkeep
