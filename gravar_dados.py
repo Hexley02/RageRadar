@@ -20,6 +20,7 @@ if opcao in pastas:
     nome_arquivo = input("Digite o nome para o arquivo (ex: audio_01):") + ".wav"
     caminho_final = os.path.join(pasta_destino, nome_arquivo)
 
+    os.makedirs(pasta_destino, exist_ok=True)
     print("\n Gravando em 3... 2... 1... FALE!")
     gravacao = sd.rec(int(segundos * fs), samplerate=fs, channels=1)
     sd.wait()
