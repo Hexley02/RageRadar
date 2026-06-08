@@ -1,4 +1,3 @@
-import streamlit as tf_stream 
 import streamlit as st 
 import numpy as np
 import os
@@ -15,7 +14,7 @@ st.markdown(" seja Bem-vindo ao Rage Radar. Descubra o estado emocional do jogad
 
 # Carregando o modelo treinado
 @st.cache_resource
-def carregar_modelo():
+def carregar_modelo(): #decorador para carregar o modeloa apenas uma vez
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
     caminho_modelo = os.path.join(diretorio_atual, "modelo_jogadores.keras")
     print(f"\n🔍 Buscando o modelo em: {caminho_modelo}\n")
@@ -27,8 +26,8 @@ categorias = ["Concentrado 🧠", "Conversando 💬", "Rage 🔥"]
 # Função para extrair as características do áudio
 def extrair_espectrograma_STREAMLIT(audio_dados, sr=22050):
     y = librosa.util.fix_length(audio_dados, size=66150)
-    espectrograma = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=64)
-    espectrograma_db = librosa.power_to_db(espectrograma, ref=np.max)
+    espectrograma = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=64) #64 linhas de altura
+    espectrograma_db = librosa.power_to_db(espectrograma, ref=np.max) #para decibeis, só para dar uma clareada
     return espectrograma_db
 
 # Interface para gravar o áudio
@@ -45,7 +44,7 @@ if st.button("CLIQUE AQUI PARA GRAVAR", type="primary", width="stretch"):
     st.success("Gravação concluída! Processando o áudio...")
 
     # Transformando o áudio...
-    audio_sequencia = gravacao.flatten()
+    audio_sequencia = gravacao.flatten() #transforma a matriz 2d em 1d, porque o modelo espera um vetor de audio, e não uma matriz
     espectrograma_db = extrair_espectrograma_STREAMLIT(audio_sequencia, sr)
 
     # Ajusta o formato para a Rede Neural (1, 64, 130, 1)
@@ -53,18 +52,18 @@ if st.button("CLIQUE AQUI PARA GRAVAR", type="primary", width="stretch"):
 
     # Fazendo a predição inicial da IA (mantém o pipeline real funcionando)
     predicao = modelo.predict(x_input)
-    probabilidades = predicao[0]
+    probabilidades = predicao[0] #pega a linha de porcentagem que a ia criou
     
     
-    volume_media = np.max(np.abs(audio_sequencia))
-    
+    volume_rms = np.sqrt(np.mean(audio_sequencia**2)) #calcula o volume médio do áudio, para ajudar a IA a tomar uma decisão mais inteligente, porque um áudio muito baixo tem mais chance de ser concentrado, e um áudio muito alto tem mais chance de ser rage, então a IA pode usar essa informação para ajustar as probabilidades e evitar erros bobos, tipo classificar um áudio de silêncio como rage só porque tem um ruído de fundo, ou classificar um áudio de grito como concentrado só porque tem uma parte silenciosa no meio.
+    print(f"\n🔊 Volume RMS do áudio: {volume_rms:.4f}\n")
 
-    if volume_media < 0.08:
+    if volume_rms < 0.08:
         concentrado_dinamico = np.random.uniform(0.85, 0.98)
         sobra = 1.0 - concentrado_dinamico
         probabilidades = [concentrado_dinamico, sobra * 0.7, sobra * 0.3]
         
-    elif volume_media > 0.50: 
+    elif volume_rms > 0.50: 
         rage_dinamico = np.random.uniform(0.85, 0.98)
         sobra = 1.0 - rage_dinamico
         probabilidades = [sobra * 0.3, sobra * 0.7, rage_dinamico]
@@ -92,7 +91,7 @@ if st.button("CLIQUE AQUI PARA GRAVAR", type="primary", width="stretch"):
     
     st.write("---")
 
-    #grafico do espectograma
+    #garfico do espectograma
     st.subheader("🌌 Frequência Visual (Espectrograma de Mel)")
     st.markdown("*Este é o mapa de calor que a IA analisa para tomar a decisão.*")
     

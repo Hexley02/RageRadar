@@ -36,8 +36,8 @@ def extrair_espectrograma(caminho_audio):
     
 #carregar os dados salvos 
 categorias = ["concentrado", "conversando", "rage"]
-x = []
-Y = []
+x = [] #vai guardar as imagens
+Y = [] #vai guardar o número das classes (0, 1 ou 2) para cada imagem, seguindo a ordem das categorias acima
 
 for i, categoria in enumerate(categorias):
     pasta = f"dados/{categoria}"
@@ -58,24 +58,23 @@ for i, categoria in enumerate(categorias):
 x = np.array(x)
 Y = np.array(Y)
 print("O formato real de X é:", x.shape)
-x = x.reshape(x.shape[0], x.shape[1], x.shape[2], 1)
+x = x.reshape(x.shape[0], x.shape[1], x.shape[2], 1) #profundidade 1 , é a cor.. quantidade\altura e largura
 
 #dividir os dados em treino e teste
 x_treino, x_teste, y_treino, y_teste = train_test_split(x, Y, test_size=0.2, random_state=42)
 
-#modelo da rede neural 
+#modelo da rede neural \16 filtros diferentes
 modelo = models.Sequential([
     layers.Conv2D(16, (3, 3), activation='relu', input_shape=(x.shape[1], x.shape[2], 1)),
     layers.MaxPooling2D((2, 2)),
 
     #segunda camada convolucional
     layers.Conv2D(32, (3, 3), activation='relu'),
-    layers.MaxPooling2D((2, 2)),
-
+    layers.MaxPooling2D((2, 2)), #esmaga a imagem em 1dS
     layers.GlobalAveragePooling2D(),
-    layers.Dense(16, activation='relu'),
+    layers.Dense(16, activation='relu'), #camda densa, 16 neuronios, extrair caracteristicas abstratas, a relu é a função de ativação, ela ajuda a rede a aprender padrões complexos, e evita o problema do gradiente desaparecendo
     layers.Dropout(0.3),
-    layers.Dense(3, activation='softmax')
+    layers.Dense(3, activation='softmax') #ultima camada, 3 neuronios (concentrado, conversando, rage) e a função de ativação softmax,que é usada para classificação multiclasse, ela vai dar uma probabilidade para cada classe, e a classe com maior probabilidade é a que a rede vai escolher como resposta
 ])
 
 #compilar e treinar
@@ -93,6 +92,5 @@ modelo.fit(
     validation_data=(x_teste, y_teste),
     class_weight=dicionario_pesos # Força o equilíbrio matemático das pastas
 )
-
 modelo.save("modelo_jogadores.keras")
 print("\n IA treinada com sucesso! Arquivo 'modelo_jogadores.keras' gerado e protegido.")

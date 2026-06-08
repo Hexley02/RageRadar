@@ -7,3 +7,5 @@ dados/regiao/*
 
 # Mas não ignore o arquivo que mantém as pastas vivas
 !.gitkeep
+venv/
+.venv/
